@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4">
+    <div class="max-w-2xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">Todo List</h1>
+            <p class="text-purple-300">管理你的任务，让生活更简单</p>
+        </div>
+
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-2xl">
+            <div class="flex gap-3 mb-6">
+                <input 
+                    type="text" 
+                    id="todoInput" 
+                    placeholder="添加新任务..." 
+                    class="flex-1 px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all"
+                >
+                <button 
+                    id="addBtn" 
+                    class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-pink-600 transform hover:scale-105 transition-all shadow-lg hover:shadow-purple-500/25"
+                >
+                    添加
+                </button>
+            </div>
+
+            <div class="flex justify-between items-center mb-4 text-sm">
+                <span id="activeCount" class="text-purple-300">0 个待完成</span>
+                <span id="completedCount" class="text-green-400">0 个已完成</span>
+            </div>
+
+            <ul id="todoList" class="space-y-3">
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+        const todoInput = document.getElementById('todoInput');
+        const addBtn = document.getElementById('addBtn');
+        const todoList = document.getElementById('todoList');
+        const activeCount = document.getElementById('activeCount');
+        const completedCount = document.getElementById('completedCount');
+
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        function updateStats() {
+            const active = todos.filter(todo => !todo.completed).length;
+            const completed = todos.filter(todo => todo.completed).length;
+            activeCount.textContent = `${active} 个待完成`;
+            completedCount.textContent = `${completed} 个已完成`;
+        }
+
+        function renderTodos() {
+            todoList.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center gap-3 p-4 bg-white/10 rounded-xl border border-white/20 hover:bg-white/15 transition-all group';
+                
+                li.innerHTML = `
+                    <button 
+                        class="toggle-btn w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${todo.completed ? 'bg-green-500 border-green-500' : 'border-purple-400 hover:border-purple-300'}"
+                        data-index="${index}"
+                    >
+                        ${todo.completed ? '<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>' : ''}
+                    </button>
+                    <span class="flex-1 text-white ${todo.completed ? 'line-through text-white/50' : ''}">${escapeHtml(todo.text)}</span>
+                    <button 
+                        class="delete-btn opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-all"
+                        data-index="${index}"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                `;
+                
+                todoList.appendChild(li);
+            });
+
+            updateStats();
+            attachEventListeners();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function addTodo() {
+            const text = todoInput.value.trim();
+            if (text) {
+                todos.unshift({
+                    id: Date.now(),
+                    text: text,
+                    completed: false
+                });
+                todoInput.value = '';
+                saveTodos();
+                renderTodos();
+                todoInput.focus();
+            }
+        }
+
+        function toggleTodo(index) {
+            todos[index].completed = !todos[index].completed;
+            saveTodos();
+            renderTodos();
+        }
+
+        function deleteTodo(index) {
+            todos.splice(index, 1);
+            saveTodos();
+            renderTodos();
+        }
+
+        function attachEventListeners() {
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.addEventListener('click', () => toggleTodo(parseInt(btn.dataset.index)));
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => deleteTodo(parseInt(btn.dataset.index)));
+            });
+        }
+
+        addBtn.addEventListener('click', addTodo);
+        todoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTodo();
+        });
+
+        renderTodos();
+    </script>
+</body>
+</html>
