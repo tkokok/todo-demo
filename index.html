@@ -95,7 +95,7 @@
                 // Set title attribute using setAttribute
                 const span = li.querySelector('span');
                 if (span) {
-                    span.setAttribute('title', todo.text);
+                    span.setAttribute('title', escapeHtml(todo.text));
                 }
                 
                 todoList.appendChild(li);
