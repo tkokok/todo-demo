@@ -22,21 +22,3 @@
 ## 如何使用
 
 直接在浏览器中打开 `index.html` 文件即可使用。
-
-## 开发工作流
-
-```
-1. SmartClaw 接收需求
-2. 创建 feature 分支
-3. 指派 opencode 开发
-4. opencode 内部评审
-5. 创建 Pull Request
-6. opencode 评审 PR
-7. 合并到 main
-```
-
-## 如何调用 opencode
-
-```bash
-~/.opencode/bin/opencode run "任务描述"
-```
